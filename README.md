@@ -11,11 +11,17 @@ Reads and prints parquet files using [Polars](https://docs.rs/polars/latest/pola
 ```
 $ git clone https://github.com/folkol/parquat.git
 $ cd parquat
-$ cargo install
+$ cargo install --path .
 ```
 
 ## Usage
 
 ```
 $ pcat *.parquet
+$ pcat --query 'SELECT `foo.bar` as BAZ FROM t WHERE `foo.bar` <> 1337' *.parquet
 ```
+
+## TODO
+
+- [ ] Add support for 'http-paths'?
+- [ ] Add support for stdin?
