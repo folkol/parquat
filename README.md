@@ -21,6 +21,10 @@ $ pcat *.parquet
 $ pcat --query 'SELECT `foo.bar` as BAZ FROM t WHERE `foo.bar` <> 1337' *.parquet
 ```
 
+## Advanced
+
+For more table formatting options, see [Polars Config](https://docs.rs/polars/latest/polars/#config-with-env-vars).
+
 ## TODO
 
 - [ ] Add support for 'http-paths'?
