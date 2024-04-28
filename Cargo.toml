@@ -1,0 +1,8 @@
+[package]
+name = "pcat"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+polars = { version = "0.39.2", features = ["lazy", "parquet", "diagonal_concat", "fmt", "fmt_no_tty"] }
+clap = { version = "4.5.4", features = ["derive"] }
