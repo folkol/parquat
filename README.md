@@ -4,7 +4,7 @@
 
 [Parquet](https://parquet.apache.org) [cat](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/cat.html).
 
-Reads and prints parquet files using [Polars](https://docs.rs/polars/latest/polars/).
+Concatenates and prints parquet files using [Polars](https://docs.rs/polars/latest/polars/).
 
 ## Installation
 

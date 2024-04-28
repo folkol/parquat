@@ -1,4 +1,5 @@
 #![feature(unix_sigpipe)]
+
 use std::error::Error;
 use std::io::IsTerminal;
 use std::path::PathBuf;
@@ -7,20 +8,27 @@ use clap::Parser;
 use polars::prelude::*;
 use polars::sql::SQLContext;
 
+/// cat for .parquet
 #[derive(Debug, Parser)]
 #[command(name = "pcat")]
-#[command(about = "cat for .parquet", long_about = None)]
+#[command(version)]
 struct Pcat {
     #[arg(required = true)]
     files: Vec<PathBuf>,
-    #[arg(
-        short,
-        long,
-        help = "SELECT `foo.bar`, `foo.baz` FROM t WHERE `foo.qux` <> 1337"
-    )]
+
+    /// Sprinkle some SQL on the concatenated data frame (`t`).
+    ///
+    /// Example: "SELECT `foo.bar`, `foo.baz` FROM t WHERE `foo.qux` <> 1337"
+    #[arg(short, long)]
     query: Option<String>,
-    #[arg(short, long, help = "Show full output (do not condense)")]
+
+    /// Show full output (do not condense)
+    #[arg(short, long)]
     full: bool,
+
+    /// Hide header (names and types)
+    #[arg(short, long)]
+    no_header: bool,
 }
 
 type MainResult = Result<(), Box<dyn Error>>;
@@ -41,7 +49,14 @@ fn main() -> MainResult {
     };
     let result = lf.collect()?;
 
+    if args.no_header {
+        std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_NAMES", "1");
+        std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
+    }
+
     if args.full || !std::io::stdout().is_terminal() {
+        std::env::set_var("POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION", "1");
+        std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
         std::env::set_var("POLARS_FMT_TABLE_FORMATTING", "NOTHING");
         std::env::set_var("POLARS_FMT_MAX_ROWS", "-1");
         std::env::set_var("POLARS_FMT_MAX_COLS", "-1");
