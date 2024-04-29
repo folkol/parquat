@@ -1,4 +1,4 @@
-#![feature(unix_sigpipe)]
+// #![feature(unix_sigpipe)]
 
 use std::error::Error;
 use std::io::IsTerminal;
@@ -34,8 +34,22 @@ struct Pcat {
 type MainResult = Result<(), Box<dyn Error>>;
 type LazyFrames = Result<Vec<LazyFrame>, PolarsError>;
 
-#[unix_sigpipe = "sig_dfl"]
+#[cfg(unix)]
+fn reset_sigpipe() {
+    unsafe {
+        libc::signal(libc::SIGPIPE, libc::SIG_DFL);
+    }
+}
+
+#[cfg(not(unix))]
+fn reset_sigpipe() {
+    // no-op
+}
+
+// #[unix_sigpipe = "sig_dfl"]
 fn main() -> MainResult {
+    reset_sigpipe();
+
     let args = Pcat::parse();
     let lfs = args.files.iter().map(get_parquet).collect::<LazyFrames>()?;
     let lfs = concat_lf_diagonal(lfs, UnionArgs::default())?;
