@@ -67,27 +67,23 @@ fn main() -> MainResult {
     };
     let mut result = lf.collect()?;
 
-    if args.no_header {
-        unsafe {
-            std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_NAMES", "1");
-            std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
-        }
-    }
 
     if args.csv {
         // let mut file = std::fs::File::create("path.csv").unwrap();
         // CsvWriter::new(&mut file).finish(&mut result).unwrap();
-        CsvWriter::new(std::io::stdout()).finish(&mut result).unwrap();
+        CsvWriter::new(std::io::stdout().lock()).finish(&mut result).unwrap();
     } else if args.full || !std::io::stdout().is_terminal() {
-        unsafe {
-            std::env::set_var("POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION", "1");
-            std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
-            std::env::set_var("POLARS_FMT_TABLE_FORMATTING", "NOTHING");
-            std::env::set_var("POLARS_FMT_MAX_ROWS", "-1");
-            std::env::set_var("POLARS_FMT_MAX_COLS", "-1");
-        }
-        println!("{result:?}");
+        CsvWriter::new(std::io::stdout().lock())
+            .with_separator(b'\t')
+            .include_header(!args.no_header)
+            .finish(&mut result).unwrap();
     } else {
+        if args.no_header {
+            unsafe {
+                std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_NAMES", "1");
+                std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
+            }
+        }
         println!("{result:?}");
     }
 
