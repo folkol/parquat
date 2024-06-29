@@ -64,16 +64,20 @@ fn main() -> MainResult {
     let result = lf.collect()?;
 
     if args.no_header {
-        std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_NAMES", "1");
-        std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
+        unsafe {
+            std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_NAMES", "1");
+            std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
+        }
     }
 
     if args.full || !std::io::stdout().is_terminal() {
-        std::env::set_var("POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION", "1");
-        std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
-        std::env::set_var("POLARS_FMT_TABLE_FORMATTING", "NOTHING");
-        std::env::set_var("POLARS_FMT_MAX_ROWS", "-1");
-        std::env::set_var("POLARS_FMT_MAX_COLS", "-1");
+        unsafe {
+            std::env::set_var("POLARS_FMT_TABLE_HIDE_DATAFRAME_SHAPE_INFORMATION", "1");
+            std::env::set_var("POLARS_FMT_TABLE_HIDE_COLUMN_DATA_TYPES", "1");
+            std::env::set_var("POLARS_FMT_TABLE_FORMATTING", "NOTHING");
+            std::env::set_var("POLARS_FMT_MAX_ROWS", "-1");
+            std::env::set_var("POLARS_FMT_MAX_COLS", "-1");
+        }
         println!("{result:?}");
     } else {
         println!("{result:?}");
