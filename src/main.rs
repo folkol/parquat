@@ -2,7 +2,7 @@
 
 use std::error::Error;
 use std::io::IsTerminal;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::Parser;
 use polars::prelude::*;
@@ -55,7 +55,11 @@ fn main() -> MainResult {
     reset_sigpipe();
 
     let args = Pcat::parse();
-    let lfs = args.files.iter().map(get_parquet).collect::<LazyFrames>()?;
+    let lfs = args
+        .files
+        .into_iter()
+        .map(get_parquet)
+        .collect::<LazyFrames>()?;
     let lfs = concat_lf_diagonal(lfs, UnionArgs::default())?;
     let lf = match args.query {
         Some(query) => {
@@ -67,16 +71,18 @@ fn main() -> MainResult {
     };
     let mut result = lf.collect()?;
 
-
     if args.csv {
         // let mut file = std::fs::File::create("path.csv").unwrap();
         // CsvWriter::new(&mut file).finish(&mut result).unwrap();
-        CsvWriter::new(std::io::stdout().lock()).finish(&mut result).unwrap();
+        CsvWriter::new(std::io::stdout().lock())
+            .finish(&mut result)
+            .unwrap();
     } else if args.full || !std::io::stdout().is_terminal() {
         CsvWriter::new(std::io::stdout().lock())
             .with_separator(b'\t')
             .include_header(!args.no_header)
-            .finish(&mut result).unwrap();
+            .finish(&mut result)
+            .unwrap();
     } else {
         if args.no_header {
             unsafe {
@@ -90,7 +96,11 @@ fn main() -> MainResult {
     Ok(())
 }
 
-fn get_parquet(path: &PathBuf) -> PolarsResult<LazyFrame> {
-    let result = LazyFrame::scan_parquet(path, ScanArgsParquet::default());
-    result.map_err(|e: PolarsError| e.wrap_msg(&|msg| format!("Couldn't read {path:?} ({msg})")))
+fn get_parquet(path_buf: PathBuf) -> PolarsResult<LazyFrame> {
+    let pl_path = PlPath::Local(Arc::<Path>::from(path_buf.clone().into_boxed_path()));
+    let result = LazyFrame::scan_parquet(pl_path, ScanArgsParquet::default());
+    result.map_err(|e: PolarsError| {
+        let path_str = format!("{:?}", path_buf);
+        e.wrap_msg(move |msg| format!("Couldn't read {} ({msg})", path_str))
+    })
 }

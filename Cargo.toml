@@ -1,9 +1,9 @@
 [package]
 name = "pcat"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 
 [dependencies]
-polars = { version = "0.39.2", features = ["lazy", "parquet", "diagonal_concat", "fmt", "fmt_no_tty", "sql"] }
+polars = { version = "0.52.0", features = ["lazy", "parquet", "diagonal_concat", "fmt", "fmt_no_tty", "sql", "dtype-categorical"] }
 clap = { version = "4.5.4", features = ["derive"] }
 libc = "0.2.153"
